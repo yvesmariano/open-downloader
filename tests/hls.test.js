@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parsePlaylist, parseAttributes, sequenceIv, outputExtension } from '../src/lib/hls.js';
+import { parsePlaylist, parseAttributes, sequenceIv, outputExtension, referencedUrls } from '../src/lib/hls.js';
 
 const BASE = 'https://cdn.example.com/video/master.m3u8';
 
@@ -31,6 +31,11 @@ test('master playlist: variantes ordenadas e áudio separado resolvido', () => {
   assert.equal(p.variants[0].audio.url, 'https://cdn.example.com/video/audio/en.m3u8');
   assert.equal(p.variants[1].url, 'https://cdn.example.com/video/low/index.m3u8');
   assert.equal(p.variants[1].audio, null);
+  assert.deepEqual(referencedUrls(p), [
+    'https://other.example.com/high.m3u8',
+    'https://cdn.example.com/video/audio/en.m3u8',
+    'https://cdn.example.com/video/low/index.m3u8',
+  ]);
 });
 
 test('media playlist: segmentos, AES-128 com IV derivado da sequência e ENDLIST', () => {
@@ -85,6 +90,10 @@ test('fMP4 com EXT-X-MAP e BYTERANGE implícito', () => {
   assert.deepEqual(p.segments[1].range, { start: 1000, end: 1499 });
   assert.equal(p.segments[0].map.url, 'https://cdn.example.com/video/init.mp4');
   assert.equal(outputExtension(p), 'mp4');
+  assert.deepEqual(new Set(referencedUrls(p)), new Set([
+    'https://cdn.example.com/video/video.mp4',
+    'https://cdn.example.com/video/init.mp4',
+  ]));
 });
 
 test('rejeita conteúdo que não é HLS', () => {

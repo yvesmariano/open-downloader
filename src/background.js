@@ -1,8 +1,10 @@
-import { classify, totalSize } from './lib/media.js';
+import { classify, resourceKey, totalSize } from './lib/media.js';
+import { parsePlaylist, referencedUrls } from './lib/hls.js';
 
 // Estado em memória é a fonte da verdade; storage.session apenas sobrevive
 // ao desligamento do service worker.
 const media = new Map(); // tabId -> item[]
+const hidden = new Map(); // tabId -> Set<resourceKey> referenciados por playlists já vistas
 const jobs = {}; // jobId -> job
 const downloadToJob = new Map(); // browser download id -> jobId
 
@@ -10,14 +12,18 @@ const ready = (async () => {
   const stored = await chrome.storage.session.get(null);
   for (const [key, value] of Object.entries(stored)) {
     if (key.startsWith('media:')) media.set(Number(key.slice(6)), value);
+    if (key.startsWith('hidden:')) hidden.set(Number(key.slice(7)), new Set(value));
   }
   Object.assign(jobs, stored.jobs ?? {});
 })();
 
 const persistTab = (tabId) =>
   media.has(tabId)
-    ? chrome.storage.session.set({ [`media:${tabId}`]: media.get(tabId) })
-    : chrome.storage.session.remove(`media:${tabId}`);
+    ? chrome.storage.session.set({
+        [`media:${tabId}`]: media.get(tabId),
+        [`hidden:${tabId}`]: [...(hidden.get(tabId) ?? [])],
+      })
+    : chrome.storage.session.remove([`media:${tabId}`, `hidden:${tabId}`]);
 
 const persistJobs = () => chrome.storage.session.set({ jobs });
 
@@ -36,11 +42,13 @@ chrome.webRequest.onResponseStarted.addListener(
     for (const { name, value } of details.responseHeaders ?? []) {
       if (value) headers.append(name, value);
     }
-    const kind = classify(details.url, headers.get('content-type') ?? '');
+    const kind = classify(details.url, headers.get('content-type') ?? '', details.type);
     if (!kind) return;
 
     await ready;
-    const items = media.get(details.tabId) ?? [];
+    const { tabId } = details;
+    if (hidden.get(tabId)?.has(resourceKey(details.url))) return;
+    const items = media.get(tabId) ?? [];
     if (items.some((i) => i.url === details.url)) return;
     items.push({
       url: details.url,
@@ -49,17 +57,43 @@ chrome.webRequest.onResponseStarted.addListener(
       size: kind === 'direct' ? totalSize(headers) : null,
       detectedAt: Date.now(),
     });
-    media.set(details.tabId, items);
-    await persistTab(details.tabId);
-    updateBadge(details.tabId);
+    media.set(tabId, items);
+    await persistTab(tabId);
+    updateBadge(tabId);
+    if (kind === 'hls') hideReferenced(tabId, details.url);
   },
   { urls: ['<all_urls>'], types: ['xmlhttprequest', 'media', 'other', 'main_frame', 'sub_frame'] },
   ['responseHeaders'],
 );
 
+// Lê a playlist e esconde o que ela referencia: segmentos (que o player com HLS
+// nativo pede como 'media') e variantes de uma master (que viram itens duplicados).
+async function hideReferenced(tabId, playlistUrl) {
+  let urls;
+  try {
+    const res = await fetch(playlistUrl, { credentials: 'include' });
+    if (!res.ok) return;
+    urls = referencedUrls(parsePlaylist(await res.text(), res.url));
+  } catch {
+    return;
+  }
+  const set = hidden.get(tabId) ?? new Set();
+  for (const url of urls) set.add(resourceKey(url));
+  hidden.set(tabId, set);
+
+  const items = media.get(tabId);
+  if (!items) return;
+  // Nunca esconde a própria playlist, mesmo que ela se autorreferencie.
+  const remaining = items.filter((i) => i.url === playlistUrl || !set.has(resourceKey(i.url)));
+  media.set(tabId, remaining);
+  await persistTab(tabId);
+  updateBadge(tabId);
+}
+
 async function clearTab(tabId) {
   await ready;
   media.delete(tabId);
+  hidden.delete(tabId);
   await persistTab(tabId);
   updateBadge(tabId);
 }

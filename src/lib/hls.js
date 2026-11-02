@@ -127,6 +127,14 @@ export function parsePlaylist(text, baseUrl) {
     : parseMedia(lines, baseUrl);
 }
 
+/** URLs que uma playlist referencia: variantes/áudios (master) ou segmentos/inits (media). */
+export function referencedUrls(playlist) {
+  if (playlist.type === 'master') {
+    return playlist.variants.flatMap((v) => (v.audio ? [v.url, v.audio.url] : [v.url]));
+  }
+  return playlist.segments.flatMap((s) => (s.map ? [s.url, s.map.url] : [s.url]));
+}
+
 /** Extensão do arquivo final de acordo com o tipo de segmento. */
 export function outputExtension(playlist) {
   const first = playlist.segments[0];

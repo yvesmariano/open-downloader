@@ -30,11 +30,16 @@ function isIgnoredHost(url) {
   }
 }
 
+// Tipos de requisição (webRequest) em que uma mídia direta é um arquivo completo:
+// carregada pelo próprio <video>/<audio> ou aberta diretamente numa aba/iframe.
+// Mídia buscada via fetch/XHR quase sempre é fragmento de um player MSE (hls.js, dash.js…).
+const DIRECT_RESOURCE_TYPES = new Set(['media', 'main_frame', 'sub_frame']);
+
 /**
  * Decide se uma resposta é uma mídia que vale listar.
  * Retorna 'hls', 'direct' ou null.
  */
-export function classify(url, contentType = '') {
+export function classify(url, contentType = '', resourceType = 'media') {
   if (!/^https?:/i.test(url) || isIgnoredHost(url)) return null;
   const type = contentType.split(';')[0].trim().toLowerCase();
   const ext = extensionOf(url);
@@ -42,9 +47,20 @@ export function classify(url, contentType = '') {
   if (/mpegurl/.test(type) || ext === 'm3u8') return 'hls';
   if (SEGMENT_EXTENSIONS.has(ext) || type === 'video/mp2t' || type === 'video/iso.segment') return null;
   if (ext === 'mpd' || /dash\+xml/.test(type)) return null;
+  if (!DIRECT_RESOURCE_TYPES.has(resourceType)) return null;
   if (type.startsWith('video/') || type.startsWith('audio/')) return 'direct';
   if (DIRECT_EXTENSIONS.has(ext) && (type === '' || type === 'application/octet-stream')) return 'direct';
   return null;
+}
+
+/** Chave de comparação que ignora query strings (segmentos costumam ter tokens assinados). */
+export function resourceKey(url) {
+  try {
+    const u = new URL(url);
+    return u.origin + u.pathname;
+  } catch {
+    return url;
+  }
 }
 
 /** Tamanho total a partir de Content-Range (respostas 206) ou Content-Length. */
