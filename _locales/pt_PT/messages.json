@@ -1,0 +1,18 @@
+{
+  "appDesc": { "message": "Gestor de transferências minimalista e de código aberto para vídeos e áudios encontrados em páginas web (ficheiros diretos e HLS)." },
+  "downloads": { "message": "Transferências" },
+  "detected": { "message": "Detetado nesta página" },
+  "noMedia": { "message": "Ainda não foi detetado nenhum conteúdo. Reproduza o vídeo e volte a abrir esta janela." },
+  "download": { "message": "Transferir" },
+  "cancel": { "message": "Cancelar" },
+  "clear": { "message": "Remover" },
+  "live": { "message": "em direto (apenas a janela atual)" },
+  "segments": { "message": "$COUNT$ segmentos", "placeholders": { "count": { "content": "$1" } } },
+  "unsupported": { "message": "Stream protegido (DRM) – não suportado" },
+  "separateAudio": { "message": "+ áudio separado" },
+  "status_running": { "message": "A iniciar…" },
+  "status_saving": { "message": "A guardar…" },
+  "status_done": { "message": "Concluído" },
+  "status_error": { "message": "Falhou" },
+  "status_cancelled": { "message": "Cancelado" }
+}

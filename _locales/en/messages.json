@@ -1,0 +1,18 @@
+{
+  "appDesc": { "message": "Minimal, open-source downloader for videos and audio found on web pages (direct files and HLS)." },
+  "downloads": { "message": "Downloads" },
+  "detected": { "message": "Detected on this page" },
+  "noMedia": { "message": "No media detected yet. Play the video and reopen this popup." },
+  "download": { "message": "Download" },
+  "cancel": { "message": "Cancel" },
+  "clear": { "message": "Clear" },
+  "live": { "message": "live (current window only)" },
+  "segments": { "message": "$COUNT$ segments", "placeholders": { "count": { "content": "$1" } } },
+  "unsupported": { "message": "Protected stream (DRM) – not supported" },
+  "separateAudio": { "message": "+ separate audio" },
+  "status_running": { "message": "Starting…" },
+  "status_saving": { "message": "Saving…" },
+  "status_done": { "message": "Done" },
+  "status_error": { "message": "Failed" },
+  "status_cancelled": { "message": "Cancelled" }
+}

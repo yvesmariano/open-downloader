@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="../icons/icon-32.png" alt="" width="20" height="20" />
+      <h1>Open Downloader</h1>
+    </header>
+
+    <section id="jobs" hidden>
+      <h2 data-i18n="downloads"></h2>
+      <ul id="job-list"></ul>
+    </section>
+
+    <section>
+      <h2 data-i18n="detected"></h2>
+      <ul id="media-list"></ul>
+      <p id="empty" class="muted" data-i18n="noMedia" hidden></p>
+    </section>
+
+    <template id="media-template">
+      <li class="item">
+        <div class="row">
+          <span class="tag"></span>
+          <span class="name"></span>
+        </div>
+        <div class="row">
+          <span class="meta muted"></span>
+          <select class="variants" hidden></select>
+          <button class="download" data-i18n="download"></button>
+        </div>
+      </li>
+    </template>
+
+    <template id="job-template">
+      <li class="item">
+        <div class="row">
+          <span class="name"></span>
+          <button class="action link"></button>
+        </div>
+        <progress max="1" value="0"></progress>
+        <span class="status muted"></span>
+      </li>
+    </template>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

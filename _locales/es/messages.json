@@ -1,0 +1,18 @@
+{
+  "appDesc": { "message": "Descargador minimalista y de código abierto para vídeos y audios encontrados en páginas web (archivos directos y HLS)." },
+  "downloads": { "message": "Descargas" },
+  "detected": { "message": "Detectado en esta página" },
+  "noMedia": { "message": "Aún no se ha detectado ningún contenido. Reproduce el vídeo y vuelve a abrir esta ventana." },
+  "download": { "message": "Descargar" },
+  "cancel": { "message": "Cancelar" },
+  "clear": { "message": "Quitar" },
+  "live": { "message": "en directo (solo la ventana actual)" },
+  "segments": { "message": "$COUNT$ segmentos", "placeholders": { "count": { "content": "$1" } } },
+  "unsupported": { "message": "Stream protegido (DRM): no compatible" },
+  "separateAudio": { "message": "+ audio separado" },
+  "status_running": { "message": "Iniciando…" },
+  "status_saving": { "message": "Guardando…" },
+  "status_done": { "message": "Completado" },
+  "status_error": { "message": "Error" },
+  "status_cancelled": { "message": "Cancelado" }
+}
